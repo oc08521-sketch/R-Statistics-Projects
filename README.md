@@ -119,7 +119,7 @@ See the accompanying **Climate Change Analysis** PDF report for the full methodo
 
 **John Loren Chapman, Owen Chapman, and Nico Chapman**
 
-Collaborative final project for PSTAT 100 at the University of California, Santa Barbara.
+Collaborative open-ended final project for PSTAT 100 at the University of California, Santa Barbara.
 
 ## Skills Demonstrated
 
