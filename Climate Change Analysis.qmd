@@ -1,0 +1,1093 @@
+---
+title: "Climate Change Analysis"
+author: "John Loren Chapman, Owen Chapman, Nico Chapman"
+date: today
+format: pdf
+execute:
+  echo: false
+---
+
+# Abstract
+
+This project investigates the connection between GHG emissions and the variables in each country (GDP per capita, population, region, and year). The following is the research question that will be analyzed in this paper: **Which country-level variables affect GHG emissions and how have they evolved through time?**
+
+The data was obtained from open-access sources and were put together as a single-country year data set from 1990 to 2019. Excluding missing observations, the final data set consisted of 4,593 observations from 5,790 observations initially collected. The exploratory data analysis was conducted using histograms, scatter plots, line graphs, and box plots. A multiple linear regression model was fitted by taking log emissions as the dependent variable and log GDP per capita, log population, and year as independent variables.
+
+The findings show that the emissions are positively skewed, where most of the countries lie in the middle range and some high-emitting countries have greater values. The average level of emissions has been increasing over time, particularly since the 2000s. For the MLR model, the predictors for the emissions have been log GDP per capita, log population, and year, which were all significant at p\<0.001. The positive coefficients for GDP per capita and population show that wealthy and populated countries emit more. A negative coefficient for the year shows a decrease over time. These final results show the complicated relationship between economic growth, population, and environment.
+
+# Introduction
+
+Climate change is one of the most significant environmental challenges facing the world today. Greenhouse gas (GHG) emissions produced by human activities contribute to global warming and have widespread environmental, economic, and social impacts. Understanding the factors correlated with greenhouse gas emissions is important for understanding climate policies and identifying opportunities to reduce emissions. With that said, the main question for this project is:
+
+**How are greenhouse gas emissions associated with GDP per capita, population, and geographic region across countries from 1990–2019?**
+
+To address this question, this project uses exploratory data analysis (EDA) and multiple linear regression (MLR) to investigate the relationships between emissions and country-level characteristics. The analysis begins by examining the distribution of emissions across countries, followed by an exploration of trends over time and relationships with GDP per capita, population, and geographic region. A multiple linear regression model is then fitted to assess the combined effects of these predictors while controlling for each other. Model performance is evaluated using an observed versus predicted plot and residual diagnostics to check the assumptions of linear regression.
+
+The remainder of this report is organized as follows. The next section, data, describes the data sources, cleaning process, and handling of missing values. Methodology outlines the methods being used, including EDA, the MLR model specification, and residual analysis. the results section presents our findings, including visualizations and models. The last section concludes with a summary of findings, limitations, and directions for future research.
+
+# Data
+
+This project uses four data sets which are openly accessible on the internet from Climate Watch and the World Bank sites. The main set being `historical_emissions.csv`, is collected from Climate Watch, which is an online site run by the World Resources Institute which offers historical greenhouse gas emission data from all over the world. The three additional sets `gdp-per-capita.csv`, `population.csv`, and `country-info.csv` were gathered from the World Bank website. The data consist of the annual GDP per capita data, population data and geographical regions classification, respectively. All four span the years 1990-2019 and are made up of yearly observations at the country level, forming a panel structure allowing us to consider both cross-countries variability and changes over time. However, since the data is observational, the results can only be considered correlative.
+
+In order to address the research question, these four data sets were merged into a single country-year data set. During data preparation, it was important to select the variables that will be used, check for missing values, and transform variables to the correct type. Initially, the merged data set had 5,790 observations. However, after deleting all observations that had missing values in the key variables, only 4,593 observations remained. It is worth mentioning as well, how there were no duplicate observations found. This is done to make sure that the data used for this analysis is accurate, as well as reliable.
+
+# Methodology
+
+Now that we understand how the data is being used, this section outlines the methods used for our analysis and results. For this project, exploratory data analysis (EDA), multiple linear regression (MLR), and residual analysis was used to investigate the relationship between greenhouse gas emissions and country-level characteristics. Following the data science workflow, the cleaned data set was first explored visually to understand the distribution of the variables, identify potential outliers, and examine relationships before fitting a statistical model. The fitted regression model was then evaluated using diagnostic plots to determine whether the assumptions of linear regression were reasonably satisfied.
+
+## Exploratory Data Analysis
+
+Exploratory Data Analysis (EDA) was performed to summarize the data and investigate relationships between greenhouse gas emissions and country-level characteristics before fitting a statistical model. Visualizations were used to examine distributions, compare groups, identify trends over time, and explore relationships between the response variable and the explanatory variables.
+
+### Visualizations
+
+- **Histograms** were used to examine the distribution of greenhouse gas emissions across all observations. Because greenhouse gas emissions span several orders of magnitude, a logarithmic scale was used to improve visualization and reduce the influence of extremely large values.
+
+- **Scatter plots** were used for fitted linear trend lines to investigate the relationships between greenhouse gas emissions and continuous variables, including the variables of the GDP per capita and population.
+
+- **Line plots** were used to examine how average greenhouse gas emissions changed over time and identifying long-term trends in the data.
+
+- **Box plots** were used to compare greenhouse gas emissions across geographic regions and to see the differences in the distribution, variability, and central tendency of emissions among regions.
+
+Using these visualizations allowed to determine whether multiple linear regression were an appropriate modeling approach and determined if any transformations of the data were necessary.
+
+## Multiple Linear Regression
+
+Multiple linear regression (MLR) was used to model the relationship between greenhouse gas emissions and several explanatory variables simultaneously. This approach allows the effect of each predictor to be estimated while holding the remaining predictors constant.
+
+### Response Variable
+
+The response variable is the natural logarithm of greenhouse gas emissions:
+
+$$\log(\text{Emissions})$$
+
+The observations with zero greenhouse gas emissions were removed before modeling as it allowed the natural logarithm to be applied directly. In doing so the logarithmic transformation was used because of how greenhouse gas emissions were highly right-skewed. This helped to improving linearity and helping satisfy the assumptions of multiple linear regression.
+
+### Predictor Variables
+
+The explanatory variables that were used in the model were:
+
+- Log GDP per capita
+- Log Population
+- Year
+
+### Regression Model
+
+The fitted multiple linear regression model is
+
+$$\log(\text{Emissions})=\beta_0+\beta_1\log(\text{GDP per capita})+beta_2\log(\text{Population})+\beta_3(\text{Year})+\varepsilon$$ where $\beta_0$ is the intercept, $\beta_1$, $\beta_2$, and $\beta_3$ is the estimated effects of each predictor, and $\varepsilon$ is the random error term.
+
+The fitted model was done using coefficient estimates, significance tests,adjusted (R\^2), an observed versus predicted plot to assess its overall performance, and residual diagnostics to show its overall performance and make sure that the assumptions of multiple linear regression were reasonable.
+
+## Residual Analysis
+
+Residual analysis was performed to evaluate how well the multiple linear regression model fit the data using the same model assumption and to assess whether the assumptions of linear regression were reasonably satisfied.
+
+### Diagnostic Evaluation
+
+A residuals vs fitted values plot was used to examine whether the residuals were randomly distributed around zero. This diagnostic plot also was used to know the assumptions of linearity and the constant variance while identifying any of constant patterns or any weird observations that could show departures from the regression assumptions.
+
+# Results
+
+```{r, echo = FALSE}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+
+#Load libraries
+suppressPackageStartupMessages({
+library(tidyverse)
+library(colorspace)
+library(maps)
+library(patchwork)
+})
+```
+
+```{r, echo = FALSE}
+#import data
+gas_emissions <- read_csv("historical_emissions.csv", show_col_types = FALSE)
+gdp <- read_csv("gdp-per-capita.csv", show_col_types = FALSE)
+population <- read_csv("population.csv", show_col_types = FALSE)
+regions <- read_csv("country-info.csv", show_col_types = FALSE)
+```
+
+```{r, echo = FALSE}
+# Clean greenhouse gas emissions
+gas_clean <- gas_emissions %>%
+  filter(
+    `Data source` == "Climate Watch",
+    Sector == "Total including LUCF",
+    Gas == "All GHG",
+    Country != "World",
+    Country != "European Union (27)"
+  ) %>%
+  mutate(
+    across(`1990`:`2019`, ~suppressWarnings(as.numeric(.)))
+  ) %>%
+  select(
+    Country,
+    `1990`:`2019`
+  ) %>%
+  pivot_longer(
+    cols = `1990`:`2019`,
+    names_to = "Year",
+    values_to = "Emissions"
+  ) %>%
+  mutate(
+    Year = as.integer(Year)
+  )
+```
+
+```{r, echo = FALSE}
+# Clean GDP
+gdp_clean <- gdp %>%
+  select(
+    Country = `Country Name`,
+    `1990`:`2019`
+  ) %>%
+  pivot_longer(
+    cols = `1990`:`2019`,
+    names_to = "Year",
+    values_to = "GDP_per_capita"
+  ) %>%
+  mutate(
+    Year = as.integer(Year)
+  )
+```
+
+```{r, echo = FALSE}
+# Clean Population
+population_clean <- population %>%
+  select(
+    Country = `Country Name`,
+    `1990`:`2019`
+  ) %>%
+  pivot_longer(
+    cols = `1990`:`2019`,
+    names_to = "Year",
+    values_to = "Population"
+  ) %>%
+  mutate(
+    Year = as.integer(Year)
+  )
+```
+
+```{r, echo = FALSE}
+# Clean Region Data
+regions_clean <- regions %>%
+  select(
+    Country = name,
+    region,
+    `sub-region`
+  )
+```
+
+## Exploratory Data Analysis
+
+Starting off with exploratory data analysis (EDA) the goal is to investigate how GHG emissions vary across countries and whether there are visible relationships between the emissions, GDP per capita, population, and geographic region. Looking at these patterns before fitting statistical models helps identify trends, potential outliers, and important sources of variation that may influence the modeling results. So in order to better examine these characteristics we first looked at the overall distribution of GHG emissions across all of the country-year observations. In doing so, exploring the distribution provides important info for the variability, center, and spread of the data. This will also identify potential skewness and extreme values that may influence later analyses. Since greenhouse gas emissions differ substantially across countries, examining the distribution is an important first step before investigating relationships with GDP per capita, population, and geographic region.
+
+### *Figure 1/Table 1 (Histogram): Distribution of Greenhouse Gas Emissions Across All Country-Year Observations*
+
+```{r, echo = FALSE}
+# Table 1
+# Merge datasets and Final Data result
+final_data <- gas_clean %>%
+  left_join(gdp_clean, by = c("Country", "Year")) %>%
+  left_join(population_clean, by = c("Country", "Year")) %>%
+  left_join(regions_clean, by = "Country") %>%
+  drop_na(
+    Emissions,
+    GDP_per_capita,
+    Population,
+    region
+  )
+
+final_data %>%
+  summarize(
+    Mean = round(mean(Emissions), 2),
+    Median = round(median(Emissions), 2),
+    SD = round(sd(Emissions), 2),
+    Min = round(min(Emissions), 2),
+    Max = round(max(Emissions), 2)
+  )
+```
+
+```{r, echo = FALSE}
+# Figure 1
+# plot of distribution on greenhouse emissions
+ggplot(
+  final_data %>% filter(Emissions > 0),
+  aes(x = Emissions)
+) +
+  geom_histogram(
+    bins = 30,
+    color = "black",
+    fill = "steelblue"
+  ) +
+  scale_x_log10(
+    breaks = c(1, 10, 100, 1000, 10000),
+    labels = c("1", "10", "100", "1,000", "10,000")
+  ) +
+  labs(
+    title = "Figure 1: Distribution of Greenhouse Gas Emissions (logarithmic x-scale)",
+    x = "Greenhouse Gas Emissions (MtCO2e)",
+    y = "Number of Observations"
+  ) +
+  theme_minimal()
+
+```
+
+We will begin by looking at the histogram above. This particular plot represents the distribution of greenhouse gas emissions across all country-year observations in our study. A logarithmic scale has been used for scaling the x-axis since the data spans many orders of magnitude. As can be seen in the distribution, it is generally unimodal and symmetrical, centered at the area between 10-100 MtCO2e where most of the observations cluster. From the peak of the distribution, the numbers fall gradually towards both the lower tail (1-10 MtCO2e) and higher tail (100-10,000 MtCO2e). In addition to the graph, the table above figure 1 provides a numerical description of the distribution. What is important to see within the table is how the average emissions (173.73 MtCO2e) are substantially higher than the median (32.71 MtCO2e). This means that there is quite a bit of spread in this data. So with that in mind, the first question that needs to be asked is why this is happening. What is really going on in these countries to cause such wide margins?
+
+### *Figure 2 (Line Graph): GHG Emissions Over Time*
+
+```{r, echo = FALSE}
+# Figure 2
+# Emissions Over Time
+emissions_year <- final_data %>%
+  group_by(Year) %>%
+  summarize(
+    Mean_Emissions = mean(Emissions, na.rm = TRUE)
+  )
+
+ggplot(emissions_year,
+       aes(x = Year,
+           y = Mean_Emissions)) +
+  geom_line(
+    color = "steelblue",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Figure 2: Average Greenhouse Gas Emissions by Year",
+    x = "Year",
+    y = "Average Emissions (MtCO2e)"
+  ) +
+  theme_minimal()
+```
+
+While the previous analysis on the last figure describes the overall distribution of greenhouse gas emissions, it doesn't show how emissions have changed over time. So in order to fully understand the long-term trends, we need to look at the average greenhouse gas emissions from 1990 to 2019. This will allow us to determine whether emissions have generally increased, decreased, or remained relatively stable throughout the study period. Figure 2 shows the average greenhouse gas emissions across all countries from 1990 to 2019. The average emissions remained quite stable throughout the early 1990s, with a slight decline around 1998–2000. Looking a the beginning of the early 2000s however, the average emissions steadily increased and reached their highest levels by the end of the study period. As a result, the line graph shows a clear upward trend in greenhouse gas emissions over time, meaning that the average emissions generally increased between 1990 and 2019.
+
+### *Figure 3 (Scatter plot): GHG emissions versus GDP per capita*
+
+```{r, echo = FALSE}
+# Figure 3
+# GDP per capita vs greenhouse gas emissions
+ggplot(
+  final_data %>% filter(Emissions > 0, GDP_per_capita > 0),
+  aes(x = GDP_per_capita, y = Emissions)
+) +
+  geom_point(
+    alpha = 0.35,
+    size = 1,
+    color = "steelblue"
+  ) +
+  geom_smooth(
+    method = "lm",
+    color = "red",
+    se = FALSE
+  ) +
+  scale_x_log10(labels = scales::label_number()) +
+  scale_y_log10(labels = scales::label_number()) +
+  labs(
+    title = "Figure 3: Greenhouse Gas Emissions vs. GDP per Capita",
+    x = "GDP per Capita (US Dollars)",
+    y = "Greenhouse Gas Emissions (MtCO2e)"
+  ) +
+  theme_minimal()
+```
+
+With proof of the increase in emissions over time, another interesting question to ask is whether if there is a connection between the growing trend and the economic development of the countries. The relationship between the levels of GHG emissions and GDP per capita is shown in figure 3. Analyzing the scatter plot in question, one can observe that the positive correlation exists (shown by the red trend line in the plot). Providing more context as to what this adds, countries with the higher GDP per capita have more GHG emissions than other countries. Something else to point out is that there is still significant variation left in the graph. It means that GDP per capita does not completely explain the difference in the emissions.
+
+### *Figure 4 (Scatter plot): GHG emissions versus population*
+
+```{r, echo = FALSE}
+# Figure 4
+# Population vs greenhouse gas emissions
+ggplot(
+  final_data %>%
+    filter(Emissions > 0, Population > 0),
+  aes(x = Population, y = Emissions)
+) +
+  geom_point(
+    alpha = 0.25,
+    size = 1,
+    color = "steelblue"
+  ) +
+  geom_smooth(
+    method = "lm",
+    color = "red",
+    se = FALSE,
+    linewidth = 1
+  ) +
+  scale_x_log10(
+    labels = scales::label_number()
+  ) +
+  scale_y_log10(
+    labels = scales::label_number()
+  ) +
+  labs(
+    title = "Figure 4: Greenhouse Gas Emissions vs. Population",
+    x = "Population",
+    y = "Greenhouse Gas Emissions (MtCO₂e)"
+  ) +
+  theme_minimal()
+
+```
+
+Having examined the relationship between GDP per capita and greenhouse gas emissions, we next investigated whether population is associated with greenhouse gas emissions. Countries with larger populations may be expected to produce higher total greenhouse gas emissions because they generally have greater energy demands, transportation needs, and industrial activity. Doing this will make sure that the relationship helps determine whether population size is an important factor associated with greenhouse gas emissions across countries. Taking a look at figure 4 shows this relationship, as countries with larger populations generally produce higher greenhouse gas emissions than countries with smaller populations. Using another scatter plot here shows a clear positive relationship, meaning that the countries with larger populations usually produce higher greenhouse gas emissions. Comparing with the relationship between GDP per capita and emissions, the association with population does seem to be a lot stronger, as the observations are more closely clustered around the fitted trend line. Although some variability remains, the overall pattern means that population is the main factor associated with greenhouse gas emissions. Once again, logarithmic scales were used on both axes to better visualize the wide range of population sizes and emission values observed in the data.
+
+### *Figure 5 (Box plot): Distribution of GHG emissions across geographic regions*
+
+```{r, echo = FALSE}
+# Figure 5
+# Greenhouse gas emissions by geographic region
+ggplot(
+  final_data %>% filter(Emissions > 0),
+  aes(x = reorder(region, Emissions, median),
+      y = Emissions)
+) +
+  geom_boxplot(
+    fill = "steelblue",
+    alpha = 0.7
+  ) +
+  scale_y_log10(
+    labels = scales::label_number()
+  ) +
+  labs(
+    title = " Figure 5: Greenhouse Gas Emissions by Geographic Region",
+    x = "Geographic Region",
+    y = "Greenhouse Gas Emissions (MtCO₂e)"
+  ) +
+  theme_minimal()
+
+```
+
+After the relationships between greenhouse gas emissions and the quantitative variables GDP per capita and population have been identified, we next investigate whether greenhouse gas emissions differ across geographic regions. Comparing emissions across regions will help identify whether certain parts of the world produce higher or lower emissions, as well as provide context for understanding regional differences. Figure 5 shows the comparison of GHG emissions by the geographic regions using box plots. Referring to each box plot, the distributions differ from one another. It tells us that there is no uniform distribution of emissions across the geographic regions. While looking more closely at each region, Asia has the highest median emissions and greatest overall variability, while Europe also shows high median emissions. Americas and Africa have more moderate levels, and Oceania has the lowest. The plot does seem to contain many outliers, in particular Asia, meaning that some countries produce substantially higher emissions than others within the same region. With all being said, geographic region appears to be associated with differences in emissions and may be an important predictor to include in the statistical model.
+
+## Multiple Linear Regression
+
+Having analyzed the individual relationships between emissions and each predictor variable, we ran a multiple linear regression (MLR) model including all three variables: GDP per capita, population, and year simultaneously. This way we can look at the effect of each variable on emissions controlling for other variables.
+
+### *Table 2: MLR Model Summary*
+
+```{r, echo = FALSE}
+# Table 2
+# Filter to positive vals
+final_data_log <- final_data %>%
+  filter(
+    Emissions > 0,
+    GDP_per_capita > 0,
+    Population > 0
+  ) %>%
+  mutate(
+    log_Emissions = log(Emissions),        
+    log_GDP = log(GDP_per_capita), 
+    log_Population = log(Population)  
+  )
+
+# Fit multiple linear regression model
+mlr_model_log <- lm(
+  log_Emissions ~ log_GDP + log_Population + Year,
+  data = final_data_log
+)
+
+# Table 
+coef_table <- summary(mlr_model_log)$coefficients
+
+as_tibble(coef_table, rownames = "term") |>
+  mutate(
+    across(where(is.numeric), \(x) round(x, 4))
+  ) |>
+  rename(
+    Term = term,
+    `p-value` = `Pr(>|t|)`
+  ) |>
+  knitr::kable(
+    caption = "Multiple Linear Regression Coefficients"
+  )
+
+```
+
+Here, we fit a multiple linear regression model to examine the combined associations of GDP per capita, population, and year with greenhouse gas emissions. According to the model results, log GDP per capita, log population, and year are statistically significant predictors of GHG emissions (p \< 0.001). Positive values of the coefficients of log GDP per capita and log population show that those countries which had higher GDP per capita and larger populations also had high GHG emissions. Similarly, negative values of the coefficient of year tell that there was a small decrease in GHG emissions over the years after controlling GDP per capita and population.
+
+### *Figure 6: Observed vs. Predicted Log CO2 Emissions*
+
+```{r, echo = FALSE}
+# Observed vs. Predicted plot
+final_data_log$Predicted_log <- predict(mlr_model_log)
+
+ggplot(final_data_log,
+       aes(x = Predicted_log,
+           y = log_Emissions)) +
+  geom_point(alpha = 0.5,
+             size = 1.2,
+             color = "steelblue") +
+  geom_abline(intercept = 0,
+              slope = 1,
+              color = "red",
+              linetype = "dashed") +
+  labs(
+    title = "Figure 6: Observed vs. Predicted Log Greenhouse Gas Emissions",
+    x = "Predicted Log Emissions",
+    y = "Observed Log Emissions"
+  ) +
+  theme_minimal()
+
+```
+
+To further assess our model's performance, we looked at the residuals. The residual analysis confirms the strong fit seen by figure 5. This observed versus predicted plot shows that most observations are close to the 45-degree reference line, meaning that the MLR predicts log greenhouse gas emissions well. While there are some variability remaining, the universal pattern shows that the model gives a strong fit to the data. This is also consistent with the residual analysis in the next section.
+
+## Residual Analysis
+
+In this part of the analysis, we use a residual plot to evaluate how well the multiple linear regression model fits the data and to check whether the model assumptions are reasonable. By definition a well-fitting model should have residuals randomly scattered around zero with no clear pattern.
+
+### *Figure 7: Residuals vs. Fitted Values (Log Emissions)*
+
+```{r, echo = FALSE}
+# Log-transform emissions
+final_data_log$log_Emissions <- log1p(final_data_log$Emissions)
+
+# Multiple linear regression model
+mlr_model_log <- lm(
+  log_Emissions ~ log(GDP_per_capita) + log(Population) + Year,
+  data = final_data_log
+)
+
+# Residuals plot
+ggplot(data.frame(
+  Fitted = fitted(mlr_model_log),
+  Residuals = resid(mlr_model_log)
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(
+    title = "Figure 7: Residuals vs. Fitted Values (Log Emissions)",
+    x = "Fitted Log Emissions",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+
+```
+
+Turning to the residual diagnostics, the residual vs. fitted values plot shows that the residuals are randomly dispersed around zero without any particular pattern or curve. There is also consistency in the spread of the residuals across the range of fitted values. This implies that the linearity and homoscedasticity assumptions are satisfied. Only a few observations have relatively larger residuals.
+
+## Missingness
+
+```{r, echo = FALSE}
+# Merge datasets before removing missing values
+merged_data <- gas_clean %>%
+  left_join(gdp_clean, by = c("Country", "Year")) %>%
+  left_join(population_clean, by = c("Country", "Year")) %>%
+  left_join(regions_clean, by = "Country")
+
+# Count observations before removing missing values
+n_before <- nrow(merged_data)
+cat("Observations before removing missing values:", n_before, "\n")
+
+# Remove observations with missing values
+final_data <- merged_data %>%
+  drop_na(
+    Emissions,
+    GDP_per_capita,
+    Population,
+    region
+  )
+
+# Count observations after removing missing values
+n_after <- nrow(final_data)
+cat("Observations after removing missing values:", n_after, "\n")
+
+# Number of observations removed
+rows_removed <- n_before - n_after
+cat("Observations removed due to missing data:", rows_removed, "\n")
+
+# Calculate percentage removed
+percent_removed <- (rows_removed / n_before) * 100
+cat("Percentage of data removed:", round(percent_removed, 2), "%\n")
+```
+
+Before concluding the results, we return to a point mentioned at the start, which was the handling of missing data. As stated in the beginning, the info on greenhouse gas emissions, GDP per capita, population, and geographic region data were all obtained from multiple publicly available sources and then merged into a single country-year data set. Since the sources did not contain complete information for every country and year, some observations contained missing values after the data sets were combined.
+
+Before removing missing values, the merged data set contained **5,790** country-year observations. In order for the analysis to be based on complete information, observations with missing values in any of the variables required for the analysis (greenhouse gas emissions, GDP per capita, population, or geographic region) were removed using `drop_na()`. This complete-case approach resulted in a final data set containing **4,593** complete observations, meaning that **1,197 observations** were removed due to missing values.
+
+Because the amount of missing data was relatively small compared to the overall size of the data set, complete-case analysis was considered appropriate for this project. No imputation methods were used because replacing missing values would introduce additional assumptions that could potentially bias the analysis.
+
+# Conclusion
+
+## Main Points
+
+Greenhouse gas emissions are associated with GDP per capita, population, and year. This analysis found:
+
+- Greenhouse gas emissions changed periodically from 1990 to 2019 over the study period.
+- Countries with high GDP per capita tend to have higher greenhouse gas emissions
+- Countries with large populations are more likely to produce higher greenhouse gas emissions.
+- GHG emissions differ across geographic regions.
+
+Therefore, we conclude that greenhouse gas emissions are associated with economic development, population size, geographic region, and time.
+
+## Practical Implication
+
+The results suggest that understanding the factors associated with greenhouse gas emissions can help to make useful decisions in environmental planning for reducing GHG emissions or the development of policies involving climate change.
+
+## Limitations
+
+The experiment included 4,593 observations after removing observations with missing values.
+
+Future work could strengthen the analysis by:
+
+- Including more variables that increase or decrease GHG emissions such as industrial impacts, renewable energy, and policies related to climate change.
+
+- Using updated greenhouse gas emission data
+
+- Testing extra methods to verify any relationships connected to greenhouse gas emissions
+
+# References
+
+World Resources Institute. (2024). Climate Watch \[Data platform\]. Retrieved from https://www.climatewatchdata.org/
+
+World Bank. (n.d.). World Bank Data \[Data portal\]. Retrieved from https://data.worldbank.org/
+
+Baumer, B. S., Kaplan, D. T., & Horton, N. J. (2021). Modern data science with R (2nd ed.). Retrieved from https://mdsr-book.github.io/mdsr2e/
+
+# Appendix: Code {.appendix}
+
+```{r}
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+# Load libraries
+library(tidyverse)
+library(colorspace)
+library(maps)
+library(patchwork)
+```
+
+```{r}
+#import data
+gas_emissions <- read_csv("historical_emissions.csv", show_col_types = FALSE)
+gdp <- read_csv("gdp-per-capita.csv", show_col_types = FALSE)
+population <- read_csv("population.csv", show_col_types = FALSE)
+regions <- read_csv("country-info.csv", show_col_types = FALSE)
+```
+
+```{r}
+# Clean greenhouse gas emissions
+gas_clean <- gas_emissions %>%
+  filter(
+    `Data source` == "Climate Watch",
+    Sector == "Total including LUCF",
+    Gas == "All GHG",
+    Country != "World",
+    Country != "European Union (27)"
+  ) %>%
+  mutate(
+    across(`1990`:`2019`, ~suppressWarnings(as.numeric(.)))
+  ) %>%
+  select(
+    Country,
+    `1990`:`2019`
+  ) %>%
+  pivot_longer(
+    cols = `1990`:`2019`,
+    names_to = "Year",
+    values_to = "Emissions"
+  ) %>%
+  mutate(
+    Year = as.integer(Year)
+  )
+```
+
+```{r}
+# Clean GDP
+gdp_clean <- gdp %>%
+  select(
+    Country = `Country Name`,
+    `1990`:`2019`
+  ) %>%
+  pivot_longer(
+    cols = `1990`:`2019`,
+    names_to = "Year",
+    values_to = "GDP_per_capita"
+  ) %>%
+  mutate(
+    Year = as.integer(Year)
+  )
+```
+
+```{r}
+# Clean Population
+population_clean <- population %>%
+  select(
+    Country = `Country Name`,
+    `1990`:`2019`
+  ) %>%
+  pivot_longer(
+    cols = `1990`:`2019`,
+    names_to = "Year",
+    values_to = "Population"
+  ) %>%
+  mutate(
+    Year = as.integer(Year)
+  )
+```
+
+```{r}
+# Clean Region Data
+regions_clean <- regions %>%
+  select(
+    Country = name,
+    region,
+    `sub-region`
+  )
+```
+
+```{r}
+# Figure 1 table
+# Merge datasets and Final Data result
+final_data <- gas_clean %>%
+  left_join(gdp_clean, by = c("Country", "Year")) %>%
+  left_join(population_clean, by = c("Country", "Year")) %>%
+  left_join(regions_clean, by = "Country") %>%
+  drop_na(
+    Emissions,
+    GDP_per_capita,
+    Population,
+    region
+  )
+
+final_data %>%
+  summarize(
+    Mean = round(mean(Emissions), 2),
+    Median = round(median(Emissions), 2),
+    SD = round(sd(Emissions), 2),
+    Min = round(min(Emissions), 2),
+    Max = round(max(Emissions), 2)
+  )
+```
+
+```{r}
+# Figure 1
+# Plot of distribution on greenhouse emissions
+ggplot(
+  final_data %>% filter(Emissions > 0),
+  aes(x = Emissions)
+) +
+  geom_histogram(
+    bins = 30,
+    color = "black",
+    fill = "steelblue"
+  ) +
+  scale_x_log10(
+    breaks = c(1, 10, 100, 1000, 10000),
+    labels = c("1", "10", "100", "1,000", "10,000")
+  ) +
+  labs(
+    title = "Figure 1: Distribution of Greenhouse Gas Emissions (logarithmic x-scale)",
+    x = "Greenhouse Gas Emissions (MtCO2e)",
+    y = "Number of Observations"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+# Figure 2
+# Emissions Over Time
+emissions_year <- final_data %>%
+  group_by(Year) %>%
+  summarize(
+    Mean_Emissions = mean(Emissions, na.rm = TRUE)
+  )
+
+ggplot(emissions_year,
+       aes(x = Year,
+           y = Mean_Emissions)) +
+  geom_line(
+    color = "steelblue",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Figure 2: Average Greenhouse Gas Emissions by Year",
+    x = "Year",
+    y = "Average Emissions (MtCO2e)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Figure 3
+# GDP per capita vs greenhouse gas emissions
+ggplot(
+  final_data %>% filter(Emissions > 0, GDP_per_capita > 0),
+  aes(x = GDP_per_capita, y = Emissions)
+) +
+  geom_point(
+    alpha = 0.35,
+    size = 1,
+    color = "steelblue"
+  ) +
+  geom_smooth(
+    method = "lm",
+    color = "red",
+    se = FALSE
+  ) +
+  scale_x_log10(labels = scales::label_number()) +
+  scale_y_log10(labels = scales::label_number()) +
+  labs(
+    title = "Figure 3: Greenhouse Gas Emissions vs. GDP per Capita",
+    x = "GDP per Capita (US Dollars)",
+    y = "Greenhouse Gas Emissions (MtCO2e)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#Figure 3 First Iteration Draft
+ggplot(final_data,
+       aes(x = GDP_per_capita,
+           y = Emissions)) +
+  geom_point(
+    alpha = 0.5,
+    color = "steelblue"
+  ) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "red"
+  ) +
+  scale_x_log10() +
+  labs(
+    title = "Greenhouse Gas Emissions vs GDP per Capita",
+    x = "GDP per Capita (log scale)",
+    y = "Greenhouse Gas Emissions"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Figure 4
+# Population vs greenhouse gas emissions
+ggplot(
+  final_data %>%
+    filter(Emissions > 0, Population > 0),
+  aes(x = Population, y = Emissions)
+) +
+  geom_point(
+    alpha = 0.25,
+    size = 1,
+    color = "steelblue"
+  ) +
+  geom_smooth(
+    method = "lm",
+    color = "red",
+    se = FALSE,
+    linewidth = 1
+  ) +
+  scale_x_log10(
+    labels = scales::label_number()
+  ) +
+  scale_y_log10(
+    labels = scales::label_number()
+  ) +
+  labs(
+    title = "Figure 4: Greenhouse Gas Emissions vs. Population",
+    x = "Population",
+    y = "Greenhouse Gas Emissions (MtCO₂e)"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+# Figure 4 First Draft
+ggplot(final_data,
+       aes(x = Population,
+           y = Emissions)) +
+  geom_point(
+    alpha = 0.5,
+    color = "darkgreen"
+  ) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "red"
+  ) +
+  scale_x_log10() +
+  labs(
+    title = "Greenhouse Gas Emissions vs Population",
+    x = "Population (log scale)",
+    y = "Greenhouse Gas Emissions"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Figure 5
+# Greenhouse gas emissions by geographic region
+ggplot(
+  final_data %>% filter(Emissions > 0),
+  aes(x = reorder(region, Emissions, median),
+      y = Emissions)
+) +
+  geom_boxplot(
+    fill = "steelblue",
+    alpha = 0.7
+  ) +
+  scale_y_log10(
+    labels = scales::label_number()
+  ) +
+  labs(
+    title = " Figure 5: Greenhouse Gas Emissions by Geographic Region",
+    x = "Geographic Region",
+    y = "Greenhouse Gas Emissions (MtCO₂e)"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+#Figure 5 First Iteration (Harder to see)
+ggplot(final_data,
+       aes(x = reorder(region, Emissions, median),
+           y = Emissions,
+           fill = region)) +
+  geom_boxplot(show.legend = FALSE) +
+  coord_flip() +
+  labs(
+    title = "Greenhouse Gas Emissions by Geographic Region",
+    x = "Region",
+    y = "Greenhouse Gas Emissions"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+```{r}
+# Table 2
+# Filter to positive vals
+final_data_log <- final_data %>%
+  filter(
+    Emissions > 0,
+    GDP_per_capita > 0,
+    Population > 0
+  ) %>%
+  mutate(
+    log_Emissions = log(Emissions),        
+    log_GDP = log(GDP_per_capita), 
+    log_Population = log(Population)  
+  )
+
+# Fit multiple linear regression model
+mlr_model_log <- lm(
+  log_Emissions ~ log_GDP + log_Population + Year,
+  data = final_data_log
+)
+
+# Table 
+coef_table <- summary(mlr_model_log)$coefficients
+
+as_tibble(coef_table, rownames = "term") |>
+  mutate(
+    across(where(is.numeric), \(x) round(x, 4))
+  ) |>
+  rename(
+    Term = term,
+    `p-value` = `Pr(>|t|)`
+  ) |>
+  knitr::kable(
+    caption = "Multiple Linear Regression Coefficients"
+  )
+```
+
+```{r}
+# Table 2 First Draft
+# Filter negative emissions before log transformation
+final_data_log <- final_data %>%
+  filter(Emissions >= 0)
+
+# Log-transform emissions
+final_data_log$log_Emissions <- log1p(final_data_log$Emissions)
+
+# Multiple linear regression model
+mlr_model_log <- lm(
+  log_Emissions ~ GDP_per_capita + Population + Year,
+  data = final_data_log
+)
+
+# Model summary
+summary(mlr_model_log)
+
+# Predicted values
+final_data_log$Predicted_log <- predict(mlr_model_log)
+
+```
+
+```{r}
+# MLR Observed vs. Predicted plot
+final_data_log$Predicted_log <- predict(mlr_model_log)
+
+ggplot(final_data_log,
+       aes(x = Predicted_log,
+           y = log_Emissions)) +
+  geom_point(alpha = 0.5,
+             size = 1.2,
+             color = "steelblue") +
+  geom_abline(intercept = 0,
+              slope = 1,
+              color = "red",
+              linetype = "dashed") +
+  labs(
+    title = "Figure 6: Observed vs. Predicted Log Greenhouse Gas Emissions",
+    x = "Predicted Log Emissions",
+    y = "Observed Log Emissions"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+## MLR without Log-Transform (draft)
+# Fit model
+mlr_model <- lm(Emissions ~ GDP_per_capita + Population + Year,
+                data = final_data)
+
+# Predicted values
+final_data$Predicted <- predict(mlr_model)
+
+# Observed vs Predicted plot
+ggplot(final_data, aes(x = Predicted, y = Emissions)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_abline(intercept = 0, slope = 1,
+              color = "red", linetype = "dashed", linewidth = 1) +
+  labs(
+    title = "Figure 6: Observed vs. Predicted CO2 Emissions",
+    x = "Predicted Emissions",
+    y = "Observed Emissions"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Log-transform emissions
+final_data_log$log_Emissions <- log1p(final_data_log$Emissions)
+
+# Multiple linear regression model
+mlr_model_log <- lm(
+  log_Emissions ~ GDP_per_capita + Population + Year,
+  data = final_data_log
+)
+
+# Residuals plot
+ggplot(data.frame(
+  Fitted = fitted(mlr_model_log),
+  Residuals = resid(mlr_model_log)
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(
+    title = "Figure 7 Residuals vs. Fitted Values (Log Emissions)",
+    x = "Fitted Log Emissions",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+## Residuals w/out Log-Transform (draft)
+#Residuals Plot
+ggplot(data.frame(
+  Fitted = fitted(mlr_model),
+  Residuals = resid(mlr_model)
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Residuals vs. Fitted Values",
+    x = "Fitted Emissions",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Figure 6 First Draft
+ggplot(final_data_log,
+       aes(x = Predicted_log, y = log_Emissions)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_abline(
+    intercept = 0,
+    slope = 1,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Observed vs. Predicted Log CO2 Emissions",
+    x = "Predicted Log Emissions",
+    y = "Observed Log Emissions"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Log-transform emissions
+final_data_log$log_Emissions <- log1p(final_data_log$Emissions)
+
+# Multiple linear regression model
+mlr_model_log <- lm(
+  log_Emissions ~ GDP_per_capita + Population + Year,
+  data = final_data_log
+)
+
+# Residuals plot
+ggplot(data.frame(
+  Fitted = fitted(mlr_model_log),
+  Residuals = resid(mlr_model_log)
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(
+    title = "Figure 7: Residuals vs. Fitted Values (Log Emissions)",
+    x = "Fitted Log Emissions",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Merge datasets before removing missing values
+merged_data <- gas_clean %>%
+  left_join(gdp_clean, by = c("Country", "Year")) %>%
+  left_join(population_clean, by = c("Country", "Year")) %>%
+  left_join(regions_clean, by = "Country")
+
+# Count observations before removing missing values
+n_before <- nrow(merged_data)
+cat("Observations before removing missing values:", n_before, "\n")
+
+# Remove observations with missing values
+final_data <- merged_data %>%
+  drop_na(
+    Emissions,
+    GDP_per_capita,
+    Population,
+    region
+  )
+
+# Count observations after removing missing values
+n_after <- nrow(final_data)
+cat("Observations after removing missing values:", n_after, "\n")
+
+# Number of observations removed
+rows_removed <- n_before - n_after
+cat("Observations removed due to missing data:", rows_removed, "\n")
+
+# Calculate percentage removed
+percent_removed <- (rows_removed / n_before) * 100
+cat("Percentage of data removed:", round(percent_removed, 2), "%\n")
+```
